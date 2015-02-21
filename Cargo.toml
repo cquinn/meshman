@@ -1,0 +1,24 @@
+[package]
+
+name = "meshman"
+version = "0.0.0"
+authors = ["Carl Quinn <carl.quinn@gmail.com>"]
+tags = []
+
+[profile.dev]
+opt-level = 2
+debug = false
+
+[profile.release]
+opt-level = 2
+debug = false
+
+[[bin]]
+
+name = "meshman"
+path = "src/main.rs"
+
+[lib]
+
+name = "mesh"
+path = "./src/mesh/lib.rs"
