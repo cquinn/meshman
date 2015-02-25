@@ -40,39 +40,46 @@ impl Vector3D {
         return Ok(Vector3D { x: xr, y: yr, z: zr });
     }
     fn minus(&self, o: Vector3D) -> Vector3D {
-		let x = self.x - o.x;
-		let y = self.y - o.y;
-		let z = self.z - o.z;
-		Vector3D {
-			x: x,
-			y: y,
-			z: z
-		}
-	}
+        let x = self.x - o.x;
+        let y = self.y - o.y;
+        let z = self.z - o.z;
+        Vector3D {
+            x: x,
+            y: y,
+            z: z
+        }
+    }
 
-	fn cross(a: Vector3D, b:Vector3D) -> Vector3D {
-		let cx = a.y * b.z - a.z * b.y;
-		let cy = a.z * b.x - a.x * b.z;
-		let cz = a.x * b.y - a.y * b.x;
-		Vector3D {
-		x: cx,
-		y: cy,
-		z: cz
-		}
-	}
+    fn cross(a: Vector3D, b:Vector3D) -> Vector3D {
+        let cx = a.y * b.z - a.z * b.y;
+        let cy = a.z * b.x - a.x * b.z;
+        let cz = a.x * b.y - a.y * b.x;
+        Vector3D {
+        x: cx,
+        y: cy,
+        z: cz
+        }
+    }
 
-	fn normalize(&self) -> Vector3D {
-		// length = sqrt((ax * ax) + (ay * ay) + (az * az))
-		let length = (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
-		let x = self.x / length;
-		let y = self.y / length;
-		let z = self.z / length;
-		Vector3D {
-			x: x,
-		    y: y,
-		    z: z
-		}
-	}
+    fn normalize(&self) -> Vector3D {
+        // length = sqrt((ax * ax) + (ay * ay) + (az * az))
+        let length = (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
+        let x = self.x / length;
+        let y = self.y / length;
+        let z = self.z / length;
+        Vector3D {
+            x: x,
+            y: y,
+            z: z
+        }
+    }
+}
+
+#[test]
+fn vectors_can_be_subtracted() {
+    //let l = Vector3D{1,1,1}
+    //let r = Vector3D{2,3,4}
+    assert!(false);
 }
 
 // Implement Hash since there is no default for f32. We'll just hash the bits
@@ -118,13 +125,13 @@ impl StlFacet {
     }
 
     fn calculate_normal_vector(&self) -> Vector3D {
-		// Dir = (B - A) x (C - A)
-		// Norm = Dir / len(Dir)
+        // Dir = (B - A) x (C - A)
+        // Norm = Dir / len(Dir)
         let direction = Vector3D::cross( self.v2.minus(self.v1), self.v3.minus(self.v1) );
 
-		// Normalize is optional in our use case
-		direction.normalize()
-	}
+        // Normalize is optional in our use case
+        direction.normalize()
+    }
 }
 
 pub struct VertexMap {
@@ -201,13 +208,13 @@ impl Mesh {
             let v1 = vm.get(&f.v1);
             let v2 = vm.get(&f.v2);
             let v3 = vm.get(&f.v3);
-			// I wish there was a better place to put this
-			let n = f.calculate_normal_vector();
+            // I wish there was a better place to put this
+            let n = f.calculate_normal_vector();
             v.push(Facet{
                 v1: v1,
                 v2: v2,
                 v3: v3,
-			    n: n,
+                n: n,
             })
         }
         v
