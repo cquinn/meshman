@@ -7,6 +7,7 @@
 use std::old_io::{IoResult,Reader};
 use std::fmt;
 use mesh::Mesh;
+use mesh::Facet;
 use vector::Vector3D;
 use vector::VertexMap;
 
@@ -111,6 +112,28 @@ impl StlFile {
         }
         println!("Vertices: {}", vertices.len());
 
-        Ok(Mesh::new_from_stl(&facets, &vertices))
+        Ok(new_mesh(&facets, &vertices))
     }
+}
+
+fn new_mesh(fv: &Vec<StlFacet>, vm: &VertexMap) -> Mesh {
+    Mesh::new_from_parts(vm.vector(), indexed_vertices(fv, vm))
+}
+
+fn indexed_vertices(fv: &Vec<StlFacet>, vm: &VertexMap) -> Vec<Facet> {
+    let mut v: Vec<Facet> = Vec::with_capacity(fv.len());
+    for f in fv.iter() {
+        let v1 = vm.get(&f.v1);
+        let v2 = vm.get(&f.v2);
+        let v3 = vm.get(&f.v3);
+        // I wish there was a better place to put this
+        let n = f.calculate_normal_vector();
+        v.push(Facet{
+            v1: v1,
+            v2: v2,
+            v3: v3,
+            n: n,
+        })
+    }
+    v
 }
