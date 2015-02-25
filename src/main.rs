@@ -1,3 +1,4 @@
+#![feature(old_io)]
 extern crate mesh;
 
 use std::old_io::BufferedReader;
