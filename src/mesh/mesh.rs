@@ -1,6 +1,57 @@
 // This is where code for the STL mesh should go
 
 // This guy depends on a sibling sub-module, so he can use that here.
-use vector::Foo;
+use vector::Vector3D;
+use std::old_io::{BufferedReader,IoResult,Reader};
+use vector::VertexMap;
+use stl::StlFacet;
 
-pub struct Bar;
+#[derive(PartialEq, Debug, Eq, Hash, Copy)]
+pub struct Facet {
+    v1: usize,
+    v2: usize,
+    v3: usize,
+    n: Vector3D
+}
+
+pub struct Mesh {
+    vertices: Vec<Vector3D>,
+    facets: Vec<Facet>,
+}
+
+impl Mesh {
+    pub fn new() -> Mesh {
+        Mesh {
+            vertices: Vec::new(),
+            facets: Vec::new(),
+        }
+    }
+
+    fn indexed_vertices(fv: &Vec<StlFacet>, vm: &VertexMap) -> Vec<Facet> {
+        let mut v: Vec<Facet> = Vec::with_capacity(fv.len());
+        for f in fv.iter() {
+            let v1 = vm.get(&f.v1);
+            let v2 = vm.get(&f.v2);
+            let v3 = vm.get(&f.v3);
+            // I wish there was a better place to put this
+            let n = f.calculate_normal_vector();
+            v.push(Facet{
+                v1: v1,
+                v2: v2,
+                v3: v3,
+                n: n,
+            })
+        }
+        v
+    }
+
+    pub fn new_from_stl(fv: &Vec<StlFacet>, vm: &VertexMap) -> Mesh {
+        let vs = vm.vector();
+        let fs = Mesh::indexed_vertices(fv, vm);
+        Mesh {
+            vertices: vs,
+            facets: fs,
+        }
+    }
+}
+
