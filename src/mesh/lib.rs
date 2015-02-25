@@ -20,8 +20,8 @@ pub use self::vector::Foo;
 // This tells the compiler to look in these additional files for code that's
 // part of this module.
 mod vector;
-mod stl_file;
-mod stl_mesh;
+mod mesh;
+mod stl;
 
 #[derive(PartialEq, PartialOrd, Copy)] //Show,
 pub struct Vector3D {
