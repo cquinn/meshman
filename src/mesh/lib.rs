@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::f32::NAN;
 use std::fmt;
 use std::old_io::{BufferedReader,Reader};
-use std::hash::{Hash, Hasher, Writer};
+use std::hash::{Hash, Hasher};
 use std::mem::{transmute};
 use std::vec::Vec;
 
@@ -45,9 +45,9 @@ impl Vector3D {
 
 // Implement Hash since there is no default for f32. We'll just hash the bits
 // since we know the f32s will all be canonical from reading.
-impl<H: Writer + Hasher> Hash<H> for Vector3D {
+impl Hash for Vector3D {
     #[inline]
-    fn hash(&self, state: &mut H) {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         //println!("V3D hash {:p}", self);
         let x: u32 = unsafe { transmute(self.x) };
         x.hash(state);
@@ -177,11 +177,12 @@ impl Mesh {
         }
     }
 
-    pub fn read(r: &mut Reader) -> Mesh {
+    pub fn read(r: &mut BufferedReader<Reader>) -> Mesh {
 
-        let header = match r.read_exact(80) {
-            Ok(h) => {
-                let hdr = String::from_utf8(h).unwrap();
+        let buf = [0; 80];
+        let header = match r.read(&buf) {
+            Ok(nread) => {
+                let hdr = String::from_utf8(&buf).unwrap();
                 println!("Header: \"{}\"", hdr);
                 hdr
             }
@@ -201,7 +202,7 @@ impl Mesh {
         }
     }
 
-    fn read_ascii(r: &mut Reader) -> Mesh {
+    fn read_ascii(r: &mut BufferedReader<Reader>) -> Mesh {
         //solid vcg
         //  facet normal 7.733874e-001 -3.151335e-002 6.331499e-001
         //    outer loop
@@ -211,7 +212,7 @@ impl Mesh {
         //    endloop
         //  endfacet
         //endsolid vcg
-        for line in (r as &mut BufferedReader).lines() {
+        for line in r.lines() {
             print!("{}", line.unwrap());
         }
         Mesh::new() // TODO
