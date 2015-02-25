@@ -77,9 +77,12 @@ impl Vector3D {
 
 #[test]
 fn vectors_can_be_subtracted() {
-    //let l = Vector3D{1,1,1}
-    //let r = Vector3D{2,3,4}
-    assert!(false);
+    let l = Vector3D {x:1.0, y:1.0, z:1.0};
+    let r = Vector3D {x:2.0, y:3.0, z:4.0};
+    let result = l.minus(r);
+    assert_eq!(result.x, -1.0);
+    assert_eq!(result.y, -2.0);
+    assert_eq!(result.z, -3.0);
 }
 
 // Implement Hash since there is no default for f32. We'll just hash the bits
