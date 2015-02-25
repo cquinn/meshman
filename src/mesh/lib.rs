@@ -6,7 +6,7 @@ use std::cmp::*;
 use std::collections::HashMap;
 use std::f32::NAN;
 use std::fmt;
-use std::old_io::{BufferedReader,Reader};
+use std::old_io::{BufferedReader,IoResult,Reader};
 use std::hash::{Hash, Hasher};
 use std::mem::{transmute};
 use std::vec::Vec;
@@ -58,6 +58,10 @@ impl Hash for Vector3D {
         z.hash(state);
         //println!("V3D hash done {:p}", self);
     }
+}
+
+pub struct StlHeader {
+    header: [u8; 80],
 }
 
 #[derive(PartialEq, Eq, Hash, Copy)]
@@ -178,31 +182,18 @@ impl Mesh {
         }
     }
 
-    pub fn read(r: &mut Reader) -> Mesh {
+    pub fn read<R: Reader>(r: &mut R) -> IoResult<Mesh> {
 
-        /*
-        let buf = [0; 80];
-        let header = match r.read(&buf) {
-            Ok(nread) => {
-                let hdr = String::from_utf8(&buf).unwrap();
-                println!("Header: \"{}\"", hdr);
-                hdr
-            }
-            Err(e) => {
-                println!("Truncated file: {}", e);
-                return Mesh{vertices: Vec::new(), facets: Vec::new()};
-            }
-        };
+        let mut header = StlHeader { header: [0u8; 80] };
+        try!(r.read_at_least(header.header.len(), &mut header.header));
 
-        return if header.starts_with("solid ") {
+        let hs = String::from_utf8_lossy(&header.header);
+        if hs.starts_with("solid ") {
             println!("Is ASCII STL");
-            Mesh::read_ascii(r)
-        }
-        else {
+        } else {
             println!("Is binary STL");
-            Mesh::read_binary(r)
         }
-        */
+
         Mesh::read_binary(r)
     }
 
@@ -224,7 +215,7 @@ impl Mesh {
     }
     */
 
-    fn read_binary(r: &mut Reader) -> Mesh {
+    fn read_binary(r: &mut Reader) -> IoResult<Mesh> {
         let facet_count = match r.read_le_u32() {
             Ok(c) => { println!("Facets: {}", c); c},
             Err(e) => { println!("Truncated file: {}", e); 0},
@@ -244,6 +235,6 @@ impl Mesh {
         }
         println!("Vertices: {}", vertices.len());
 
-        Mesh::new_from_stl(&facets, &vertices)
+        Ok(Mesh::new_from_stl(&facets, &vertices))
     }
 }
