@@ -183,6 +183,7 @@ pub struct Facet {
     v1: usize,
     v2: usize,
     v3: usize,
+    n: Vector3D
 }
 
 pub struct Mesh {
@@ -210,6 +211,7 @@ impl Mesh {
                 v1: v1,
                 v2: v2,
                 v3: v3,
+			    n: n,
             })
         }
         v
