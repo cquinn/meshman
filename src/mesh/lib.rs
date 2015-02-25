@@ -12,6 +12,17 @@ use std::hash::{Hash, Hasher};
 use std::mem::{transmute};
 use std::vec::Vec;
 
+// By default code in a sub-module isn't exposed when someone uses this crate;
+// this says to the compiler "I want to use this struct, but all export it to
+// people who use me".
+pub use self::vector::Foo;
+
+// This tells the compiler to look in these additional files for code that's
+// part of this module.
+mod vector;
+mod stl_file;
+mod stl_mesh;
+
 #[derive(PartialEq, PartialOrd, Copy)] //Show,
 pub struct Vector3D {
     x: f32,
