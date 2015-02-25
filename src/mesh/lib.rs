@@ -1,4 +1,5 @@
 //#![crate_name = "mesh"]
+#![feature(old_io)]
 //mod mesh;
 
 use std::cmp::*;
