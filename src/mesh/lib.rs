@@ -98,46 +98,6 @@ impl Hash for Vector3D {
     }
 }
 
-pub struct StlHeader {
-    header: [u8; 80],
-}
-
-#[derive(PartialEq, Eq, Hash, Copy)]
-pub struct StlFacet {
-    n : Vector3D,
-    v1: Vector3D,
-    v2: Vector3D,
-    v3: Vector3D,
-    abc: u16,
-}
-
-impl fmt::Debug for StlFacet {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{:?}]({:?}-{:?}-{:?})[{:X}]",
-            &self.n, &self.v1, &self.v2, &self.v3, self.abc)
-    }
-}
-
-impl StlFacet {
-    fn read(r: &mut Reader) -> IoResult<StlFacet> {
-        let n = try!(Vector3D::read(r));
-        let v1 = try!(Vector3D::read(r));
-        let v2 = try!(Vector3D::read(r));
-        let v3 = try!(Vector3D::read(r));
-        let abc = try!(r.read_le_u16());
-        return Ok(StlFacet { n:n, v1:v1, v2:v2, v3:v3, abc:abc });
-    }
-
-    fn calculate_normal_vector(&self) -> Vector3D {
-        // Dir = (B - A) x (C - A)
-        // Norm = Dir / len(Dir)
-        let direction = Vector3D::cross( self.v2.minus(self.v1), self.v3.minus(self.v1) );
-
-        // Normalize is optional in our use case
-        direction.normalize()
-    }
-}
-
 pub struct VertexMap {
     vertices: HashMap<Vector3D,usize>,
 }
@@ -232,6 +192,52 @@ impl Mesh {
             facets: fs,
         }
     }
+}
+
+
+pub struct StlFile;
+
+pub struct StlHeader {
+    header: [u8; 80],
+}
+
+#[derive(PartialEq, Eq, Hash, Copy)]
+pub struct StlFacet {
+    n : Vector3D,
+    v1: Vector3D,
+    v2: Vector3D,
+    v3: Vector3D,
+    abc: u16,
+}
+
+impl fmt::Debug for StlFacet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{:?}]({:?}-{:?}-{:?})[{:X}]",
+            &self.n, &self.v1, &self.v2, &self.v3, self.abc)
+    }
+}
+
+impl StlFacet {
+    fn read(r: &mut Reader) -> IoResult<StlFacet> {
+        let n = try!(Vector3D::read(r));
+        let v1 = try!(Vector3D::read(r));
+        let v2 = try!(Vector3D::read(r));
+        let v3 = try!(Vector3D::read(r));
+        let abc = try!(r.read_le_u16());
+        return Ok(StlFacet { n:n, v1:v1, v2:v2, v3:v3, abc:abc });
+    }
+
+    fn calculate_normal_vector(&self) -> Vector3D {
+        // Dir = (B - A) x (C - A)
+        // Norm = Dir / len(Dir)
+        let direction = Vector3D::cross( self.v2.minus(self.v1), self.v3.minus(self.v1) );
+
+        // Normalize is optional in our use case
+        direction.normalize()
+    }
+}
+
+impl StlFile {
 
     pub fn read<R: Reader>(r: &mut R) -> IoResult<Mesh> {
 
@@ -245,7 +251,7 @@ impl Mesh {
             println!("Is binary STL");
         }
 
-        Mesh::read_binary(r)
+        StlFile::read_binary(r)
     }
 
     /*
@@ -292,3 +298,4 @@ impl Mesh {
         Ok(Mesh::new_from_stl(&facets, &vertices))
     }
 }
+

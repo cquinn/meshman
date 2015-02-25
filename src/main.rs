@@ -3,7 +3,7 @@ extern crate mesh;
 
 use std::old_io::BufferedReader;
 use std::old_io::fs::File;
-use mesh::Mesh;
+use mesh::StlFile;
 
 fn main() {
     let args = std::os::args();
@@ -14,5 +14,5 @@ fn main() {
         Ok(f) => f,
         Err(e) => panic!("file error: {}", e),
     };
-    let mesh = Mesh::read(&mut BufferedReader::new(meshfile));
+    let mesh = StlFile::read(&mut BufferedReader::new(meshfile));
 }
