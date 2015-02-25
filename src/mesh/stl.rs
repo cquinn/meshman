@@ -1,7 +1,10 @@
-// This is where code for STL file handling should go
+// STL file handling.
+//#![allow(unstable)]
+#![allow(dead_code)]
+#![deny(unused_imports)]
 
 // This guy depends on multiple sibling sub-modules, so he can use that here.
-use std::old_io::{BufferedReader,IoResult,Reader};
+use std::old_io::{IoResult,Reader};
 use std::fmt;
 use mesh::Mesh;
 use vector::Vector3D;
@@ -111,4 +114,3 @@ impl StlFile {
         Ok(Mesh::new_from_stl(&facets, &vertices))
     }
 }
-

@@ -1,8 +1,8 @@
-// This is where code for the STL mesh should go
+//#![allow(unstable)]
+#![allow(dead_code)]
 
 // This guy depends on a sibling sub-module, so he can use that here.
 use vector::Vector3D;
-use std::old_io::{BufferedReader,IoResult,Reader};
 use vector::VertexMap;
 use stl::StlFacet;
 
