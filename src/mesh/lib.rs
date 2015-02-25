@@ -177,8 +177,9 @@ impl Mesh {
         }
     }
 
-    pub fn read(r: &mut BufferedReader<Reader>) -> Mesh {
+    pub fn read(r: &mut Reader) -> Mesh {
 
+        /*
         let buf = [0; 80];
         let header = match r.read(&buf) {
             Ok(nread) => {
@@ -200,9 +201,12 @@ impl Mesh {
             println!("Is binary STL");
             Mesh::read_binary(r)
         }
+        */
+        Mesh::read_binary(r)
     }
 
-    fn read_ascii(r: &mut BufferedReader<Reader>) -> Mesh {
+    /*
+    fn read_ascii(r: &mut Reader) -> Mesh {
         //solid vcg
         //  facet normal 7.733874e-001 -3.151335e-002 6.331499e-001
         //    outer loop
@@ -217,6 +221,7 @@ impl Mesh {
         }
         Mesh::new() // TODO
     }
+    */
 
     fn read_binary(r: &mut Reader) -> Mesh {
         let facet_count = match r.read_le_u32() {
