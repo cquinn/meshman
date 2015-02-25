@@ -194,7 +194,7 @@ impl Mesh {
     }
 
     /*
-    fn read_ascii(r: &mut Reader) -> Mesh {
+    fn read_ascii(r: &mut Reader) -> IoResult<Mesh> {
         //solid vcg
         //  facet normal 7.733874e-001 -3.151335e-002 6.331499e-001
         //    outer loop
