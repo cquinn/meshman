@@ -1,7 +1,6 @@
 #![feature(env)]
 #![feature(old_io)]
 #![feature(old_path)]
-#![feature(os)]
 
 extern crate mesh;
 
