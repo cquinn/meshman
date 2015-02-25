@@ -5,7 +5,7 @@ use std::cmp::*;
 use std::collections::HashMap;
 use std::f32::NAN;
 use std::fmt;
-use std::old_io::{BufferedReader,Reader};
+use std::old_io::{BufferedReader,IoResult,Reader};
 use std::hash::{Hash, Hasher};
 use std::mem::{transmute};
 use std::vec::Vec;
@@ -31,15 +31,11 @@ impl fmt::Debug for Vector3D {
 }
 
 impl Vector3D {
-    fn read(r: &mut Reader) -> Vector3D {
-        let xr = r.read_le_f32();
-        let yr = r.read_le_f32();
-        let zr = r.read_le_f32();
-        if xr.is_ok() && yr.is_ok() && zr.is_ok() {
-            let v = Vector3D { x: xr.ok().unwrap(), y: yr.ok().unwrap(), z: zr.ok().unwrap() };
-            return v
-        }
-        return Vector3D { x: NAN, y: NAN, z: NAN };
+    fn read(r: &mut Reader) -> IoResult<Vector3D> {
+        let xr = try!(r.read_le_f32());
+        let yr = try!(r.read_le_f32());
+        let zr = try!(r.read_le_f32());
+        return Ok(Vector3D { x: xr, y: yr, z: zr });
     }
 }
 
@@ -76,13 +72,13 @@ impl fmt::Debug for StlFacet {
 }
 
 impl StlFacet {
-    fn read(r: &mut Reader) -> StlFacet {
-        let n = Vector3D::read(r);
-        let v1 = Vector3D::read(r);
-        let v2 = Vector3D::read(r);
-        let v3 = Vector3D::read(r);
-        let abc = r.read_le_u16().unwrap();
-        StlFacet { n:n, v1:v1, v2:v2, v3:v3, abc:abc }
+    fn read(r: &mut Reader) -> IoResult<StlFacet> {
+        let n = try!(Vector3D::read(r));
+        let v1 = try!(Vector3D::read(r));
+        let v2 = try!(Vector3D::read(r));
+        let v3 = try!(Vector3D::read(r));
+        let abc = try!(r.read_le_u16());
+        return Ok(StlFacet { n:n, v1:v1, v2:v2, v3:v3, abc:abc });
     }
 }
 
@@ -234,7 +230,10 @@ impl Mesh {
         println!("Collections ready");
 
         for fi in range(0, facet_count) {
-            let f = StlFacet::read(r);
+            let f = match StlFacet::read(r) {
+                Ok(x) => x,
+                Err(e) => panic!("file error: {}", e),
+            };
             let v1i = vertices.add(f.v1);
             let v2i = vertices.add(f.v2);
             let v3i = vertices.add(f.v3);
