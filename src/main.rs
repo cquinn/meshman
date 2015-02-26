@@ -6,6 +6,7 @@ extern crate getopts;
 use std::old_io::BufferedReader;
 use std::old_io::fs::File;
 use mesh::StlFile;
+use mesh::AmfFile;
 use mesh::POV;
 use mesh::Mesh;
 use mesh::Vector3D;
@@ -18,8 +19,8 @@ fn main() {
 
     let mut opts = Options::new();
     opts.optopt("i", "input", "File name to process", "FILE");
-    opts.optopt("o", "output", "File name to output", "FILE");
     opts.optflag("p", "povray", "Export the model into POV-Ray format");
+    opts.optflag("a", "amf", "Export the model into AMF format");
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(args.tail()) {
@@ -33,15 +34,18 @@ fn main() {
     };
 
     let export_to_povray = matches.opt_present("p");
+    let export_to_amf = matches.opt_present("a");
     
     let input_file = match matches.opt_str("i") {
         Some(x) => x,
         None => panic!("No input file"),
     };
+    /*
     let output_file = match matches.opt_str("o") {
         Some(x) => x,
         None => panic!("No output file"),
     };
+    */
 
     let input_file_copy = input_file.clone();
     
@@ -93,6 +97,8 @@ fn main() {
 
     if export_to_povray {
         POV::export_to_pov(&input_file_copy, mesh);
+    } else if export_to_amf {
+        AmfFile::write(&mesh, input_file_copy);
     };
 }
 
