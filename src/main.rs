@@ -35,32 +35,32 @@ fn main() {
 
     let export_to_povray = matches.opt_present("p");
     let export_to_amf = matches.opt_present("a");
-    
+
     let input_file = match matches.opt_str("i") {
         Some(x) => x,
-        None => panic!("No input file"),
+        None => { println!("No input file"); return; },
     };
     /*
     let output_file = match matches.opt_str("o") {
         Some(x) => x,
-        None => panic!("No output file"),
+        None => { println!("No output file"); return; },
     };
     */
 
     let input_file_copy = input_file.clone();
-    
+
     let meshfile = File::open(&Path::new(input_file));
 
     let file = match StlFile::read(&mut BufferedReader::new(meshfile)) {
         Ok(f) => f,
-        Err(e) => { println!("STL file error: {}", e); return; }
+        Err(e) => { println!("STL read error: {}", e); return; }
     };
 
     let mesh = file.as_mesh();
 
     file.println_debug();
     println!("");
-    
+
     let mesh = file.as_mesh();
     println!("Mesh: {:?}", &mesh);
 
@@ -73,7 +73,7 @@ fn main() {
             Some(x) => x,
         };
         let vector = match free.pop() {
-            None => panic!("Every command requires a vector"),
+            None => { println!("Every command requires a vector"); return; },
             Some(x) => {
                 let parts: Vec<f32> = x.split(',').filter_map(|s| s.parse::<f32>().ok() ).collect();
                 if (parts.len() != 3) {
@@ -84,7 +84,7 @@ fn main() {
         };
         let command = match command_name.as_slice() {
             "rotate" => Box::new(RotateOperation { v: vector }),
-            _ => panic!("Unknown command: {}", command_name)
+            _ => { println!("Unknown command: {}", command_name); return; }
         };
         commands.push( command );
     }
@@ -92,11 +92,11 @@ fn main() {
     // Do we open the file, if it doesn't exist yet?
 //    let generated_file = match File::open(&Path::new(output_file)) {
 //        Ok(f) => f,
-//        Err(e) => panic!("file error: {}", e),
+//        Err(e) => { println!("file error: {}", e); return; }
 //    };
 
     if export_to_povray {
-        POV::export_to_pov(&input_file_copy, mesh);
+        POV::export_to_pov(&input_file_copy, &mesh);
     } else if export_to_amf {
         AmfFile::write(&mesh, input_file_copy);
     };

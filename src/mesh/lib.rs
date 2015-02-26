@@ -1,5 +1,5 @@
 #![crate_name = "mesh"]
-#![feature(old_io,core)]
+#![feature(core,old_io,old_path)]
 
 // This tells the compiler to look in these additional files for code that's
 // part of this module.
@@ -18,4 +18,3 @@ pub use self::mesh::Mesh;
 pub use self::stl::StlFile;
 pub use self::pov::POV;
 pub use self::amf::AmfFile;
-

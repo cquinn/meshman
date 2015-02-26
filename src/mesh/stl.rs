@@ -39,7 +39,16 @@ impl StlFacet {
         let v2 = try!(Vector3D::read(r));
         let v3 = try!(Vector3D::read(r));
         let abc = try!(r.read_le_u16());
-        return Ok(StlFacet { n:n, v1:v1, v2:v2, v3:v3, abc:abc });
+        Ok(StlFacet { n:n, v1:v1, v2:v2, v3:v3, abc:abc })
+    }
+
+    pub fn write(&self, w: &mut Writer) -> IoResult<()> {
+        try!(self.n.write(w));
+        try!(self.v1.write(w));
+        try!(self.v2.write(w));
+        try!(self.v3.write(w));
+        try!(w.write_le_u16(self.abc));
+        Ok(())
     }
 
     pub fn calculate_normal_vector(&self) -> Vector3D {
@@ -97,43 +106,33 @@ impl StlFile {
         Ok(self)
     }
 
-
     pub fn write_binary(m: &Mesh, w: &mut Writer) -> IoResult<()> {
 
-       //IMPORTANT! STL files assume little endian
-       let mut header = StlHeader { header: [0u8; 80] };
+        //IMPORTANT! STL files assume little endian
+        let header = StlHeader { header: [0u8; 80] };
 
-       // write the blank header
-       for i in range(0, mem::size_of_val(&header)) {
-          try!(w.write_u8(header.header[i]));
-       }
+        // write the blank header
+        for i in range(0, mem::size_of_val(&header)) {
+            try!(w.write_u8(header.header[i]));
+        }
 
-       // write the number of triangles
-       let num = m.facets.len();
-       try!(w.write_le_u32(num as u32));
+        // write the number of triangles
+        let num = m.facets.len();
+        try!(w.write_le_u32(num as u32));
 
-       // for each triangle
-       for i in range(0, num) {
+        // for each triangle
+        for i in range(0, num) {
 
-          // write its facet
-          let facet = m.facets[i];
-          let stl_facet = StlFacet { n:facet.n, v1:m.vertices[facet.v1], v2:m.vertices[facet.v2], v3:m.vertices[facet.v3], abc:0 as u16 };
+            // write its facet
+            let facet = &m.facets[i];
+            let stl_facet = StlFacet {
+                n:facet.n, v1:m.vertices[facet.v1],
+                v2:m.vertices[facet.v2],
+                v3:m.vertices[facet.v3],
+                abc:0 as u16
+            };
 
-          try!(w.write_le_f32(stl_facet.n.x));
-          try!(w.write_le_f32(stl_facet.n.y));
-          try!(w.write_le_f32(stl_facet.n.z));
-          try!(w.write_le_f32(stl_facet.v1.x));
-          try!(w.write_le_f32(stl_facet.v1.y));
-          try!(w.write_le_f32(stl_facet.v1.z));
-          try!(w.write_le_f32(stl_facet.v2.x));
-          try!(w.write_le_f32(stl_facet.v2.y));
-          try!(w.write_le_f32(stl_facet.v2.z));
-          try!(w.write_le_f32(stl_facet.v3.x));
-          try!(w.write_le_f32(stl_facet.v3.y));
-          try!(w.write_le_f32(stl_facet.v3.z));
-
-          // STL file format states atribute count should be 0
-          try!(w.write_le_u16(0 as u16));
+            try!(stl_facet.write(w));
        }
 
        Ok(())
