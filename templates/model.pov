@@ -21,7 +21,7 @@ global_settings {
 #debug concat("look_at:", str(look_at_z, 5, 0))
 camera {
   orthographic
-  location <0,box_diag + 1,0>
+  location <0,box_diag + 1,90>
   rotate <look_angle,0,40>
   look_at <0,0,look_at_z>
 }
