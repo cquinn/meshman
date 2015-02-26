@@ -55,7 +55,7 @@ impl StlFacet {
 
 impl StlFile {
 
-    pub fn read<R: Reader>(r: &mut R) -> IoResult<Mesh> {
+    pub fn read(r: &mut Reader) -> IoResult<Mesh> {
 
         let mut header = StlHeader { header: [0u8; 80] };
         try!(r.read_at_least(header.header.len(), &mut header.header));

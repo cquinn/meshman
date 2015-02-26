@@ -8,15 +8,15 @@ use stl::StlFacet;
 
 #[derive(PartialEq, Debug, Eq, Hash, Copy)]
 pub struct Facet {
-    v1: usize,
-    v2: usize,
-    v3: usize,
-    n: Vector3D
+    pub v1: usize,
+    pub v2: usize,
+    pub v3: usize,
+    pub n: Vector3D
 }
 
 pub struct Mesh {
-    vertices: Vec<Vector3D>,
-    facets: Vec<Facet>,
+    pub vertices: Vec<Vector3D>,
+    pub facets: Vec<Facet>,
 }
 
 impl Mesh {
