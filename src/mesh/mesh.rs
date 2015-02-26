@@ -2,10 +2,11 @@
 #![allow(dead_code)]
 
 // This guy depends on a sibling sub-module, so he can use that here.
+use std::fmt;
 use vector::Vector3D;
 use vector::VertexMap;
 
-#[derive(PartialEq, Debug, Eq, Hash, Copy)]
+#[derive(PartialEq, Eq, Hash, Copy)]
 pub struct Facet {
     pub v1: usize,
     pub v2: usize,
@@ -13,6 +14,14 @@ pub struct Facet {
     pub n: Vector3D
 }
 
+impl fmt::Debug for Facet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{:?}]({:?}-{:?}-{:?})",
+            &self.n, &self.v1, &self.v2, &self.v3)
+    }
+}
+
+#[derive(Debug)]
 pub struct Mesh {
     pub vertices: Vec<Vector3D>,
     pub facets: Vec<Facet>,

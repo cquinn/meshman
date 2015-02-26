@@ -16,10 +16,15 @@ fn main() {
         "Usage: ./meshman <path/to/mesh>"
     );
 
-    let meshfile = match File::open(&Path::new(meshname)) {
+    let meshfile = File::open(&Path::new(meshname));
+    let file = match StlFile::read(&mut BufferedReader::new(meshfile)) {
         Ok(f) => f,
-        Err(e) => panic!("file error: {}", e),
+        Err(e) => { println!("STL file error: {}", e); return; }
     };
 
-    StlFile::read(&mut BufferedReader::new(meshfile));
+    file.println_debug();
+    println!("");
+
+    let mesh = file.as_mesh();
+    println!("Mesh: {:?}", &mesh)
 }
