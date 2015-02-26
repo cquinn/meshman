@@ -20,7 +20,7 @@ impl fmt::Debug for Facet {
     }
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct Mesh {
     pub vertices: Vec<Vector3D>,
     pub facets: Vec<Facet>,
