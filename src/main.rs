@@ -2,6 +2,8 @@
 
 extern crate mesh;
 extern crate getopts;
+extern crate cgmath;
+extern crate nalgebra;
 
 use std::old_io::BufferedReader;
 use std::old_io::fs::File;
@@ -12,6 +14,15 @@ use mesh::Mesh;
 use mesh::Vector3D;
 use getopts::Options;
 use std::os;
+use cgmath::Decomposed;
+use cgmath::Vector3;
+use cgmath::Basis3;
+use cgmath::Quaternion;
+use cgmath::Rotation3;
+use cgmath::Rad;
+use std::num;
+use nalgebra::na::{Vec3, Mat3};
+use nalgebra::na;
 
 fn main() {
     let args: Vec<String> = os::args();
@@ -21,6 +32,7 @@ fn main() {
     opts.optopt("i", "input", "File name to process", "FILE");
     opts.optflag("p", "povray", "Export the model into POV-Ray format");
     opts.optflag("a", "amf", "Export the model into AMF format");
+    opts.optflag("v", "view", "Print the model to the console");
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(args.tail()) {
@@ -35,17 +47,12 @@ fn main() {
 
     let export_to_povray = matches.opt_present("p");
     let export_to_amf = matches.opt_present("a");
-    
+    let export_to_console = matches.opt_present("v");
+
     let input_file = match matches.opt_str("i") {
         Some(x) => x,
         None => panic!("No input file"),
     };
-    /*
-    let output_file = match matches.opt_str("o") {
-        Some(x) => x,
-        None => panic!("No output file"),
-    };
-    */
 
     let input_file_copy = input_file.clone();
     
@@ -56,9 +63,6 @@ fn main() {
         Err(e) => { println!("STL file error: {}", e); return; }
     };
 
-    file.println_debug();
-    println!("");
-    
     let mesh = file.as_mesh();
 
     // Process free as commands
@@ -92,18 +96,13 @@ fn main() {
         }
     }
 
-    println!("Mesh: {:?}", &changed_mesh);
-
-    // Do we open the file, if it doesn't exist yet?
-//    let generated_file = match File::open(&Path::new(output_file)) {
-//        Ok(f) => f,
-//        Err(e) => panic!("file error: {}", e),
-//    };
-
     if export_to_povray {
-        POV::export_to_pov(&input_file_copy, mesh);
+        POV::export_to_pov(&input_file_copy, changed_mesh);
     } else if export_to_amf {
-        AmfFile::write(&mesh, input_file_copy);
+        AmfFile::write(&changed_mesh, input_file_copy);
+    } else if export_to_console {
+        //file.println_debug();
+        println!("Mesh: {:?}", &changed_mesh);
     };
 
 }
@@ -119,7 +118,22 @@ pub struct RotateOperation {
 
 impl MeshOperation for RotateOperation {
     fn apply(&self, mesh: Mesh) -> Mesh {
-        return Mesh::new();
+        //let v3 = Vector3 {x: self.v.x, y: self.v.y, z: self.v.z};
+        let scale = 1.0;
+        let rot:Basis3<f32> = Rotation3::from_euler( Rad {s: self.v.x}, Rad {s: self.v.z}, Rad {s: self.v.z});
+        let disp = vec![];
+
+//        let decom: Decomposed<f32, Vector3<f32>, Vec<Vector3<f32>>> = Decomposed {scale: scale, rot: rot, disp: disp};
+        let v3s = mesh.vertices.iter()
+            .map(|v| Vector3::new(v.x, v.y, v.z) )
+            .map(|v3:Vector3<f32>| {
+                let r3:Vector3<f32> = rot.rotate_vector(&v3);
+            return r3
+        } )
+            .map(|v3| Vector3D{x: v3.x, y: v3.y, z: v3.z})
+            .collect();
+
+        return Mesh::new_from_parts(v3s, mesh.facets);
     }
 }
 

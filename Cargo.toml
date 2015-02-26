@@ -25,3 +25,5 @@ path = "./src/mesh/lib.rs"
 
 [dependencies]
 getopts = "*"
+cgmath = "*"
+nalgebra = "*"
