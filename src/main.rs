@@ -2,7 +2,6 @@
 
 extern crate mesh;
 extern crate getopts;
-extern crate cgmath;
 extern crate nalgebra;
 
 use std::old_io::BufferedReader;
@@ -14,15 +13,7 @@ use mesh::Mesh;
 use mesh::Vector3D;
 use getopts::Options;
 use std::os;
-use cgmath::Decomposed;
-use cgmath::Vector3;
-use cgmath::Basis3;
-use cgmath::Quaternion;
-use cgmath::Rotation3;
-use cgmath::Rad;
-use std::num;
-use nalgebra::na::{Vec3, Mat3};
-use nalgebra::na;
+use nalgebra::*;
 
 fn main() {
     let args: Vec<String> = os::args();
@@ -118,21 +109,15 @@ pub struct RotateOperation {
 
 impl MeshOperation for RotateOperation {
     fn apply(&self, mesh: Mesh) -> Mesh {
-        //let v3 = Vector3 {x: self.v.x, y: self.v.y, z: self.v.z};
-        let scale = 1.0;
-        let rot:Basis3<f32> = Rotation3::from_euler( Rad {s: self.v.x}, Rad {s: self.v.z}, Rad {s: self.v.z});
-        let disp = vec![];
+        let rot = Vec3::new(self.v.x, self.v.y, self.v.z);
 
-//        let decom: Decomposed<f32, Vector3<f32>, Vec<Vector3<f32>>> = Decomposed {scale: scale, rot: rot, disp: disp};
         let v3s = mesh.vertices.iter()
-            .map(|v| Vector3::new(v.x, v.y, v.z) )
-            .map(|v3:Vector3<f32>| {
-                let r3:Vector3<f32> = rot.rotate_vector(&v3);
-            return r3
-        } )
-            .map(|v3| Vector3D{x: v3.x, y: v3.y, z: v3.z})
+            .map(|v| Vec3::new(v.x, v.y, v.z) )
+            .map(|v3| rot.rotate(&v3))
+            .map(|v3| Vector3D {x: v3.x, y: v3.y, z: v3.z} )
             .collect();
 
+        //println!("{:?}", v3s);
         return Mesh::new_from_parts(v3s, mesh.facets);
     }
 }
@@ -151,6 +136,15 @@ fn converts_arg_to_vector() {
     assert_eq!(result.x, 1.0);
     assert_eq!(result.y, 2.0);
     assert_eq!(result.z, 3.0);
+}
+
+#[test]
+fn able_to_rotate() {
+    let a = Vec3::new(1.0, 1.0, 1.0);
+    let c = Vec3::new(1.0, 1.0, 1.0);
+    let d = a.rotate(&c);
+
+    assert_eq!(a.as_array(), d.as_array());
 }
 
 fn print_usage(program: &str, opts: Options) {
