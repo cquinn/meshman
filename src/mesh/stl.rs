@@ -26,7 +26,7 @@ pub struct StlFacet {
 
 impl fmt::Debug for StlFacet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{:?}]({:?}-{:?}-{:?})[{:X}]",
+        write!(f, "[{:?}] ({:?}-{:?}-{:?}) [{:X}]",
             &self.n, &self.v1, &self.v2, &self.v3, self.abc)
     }
 }
@@ -54,7 +54,6 @@ impl StlFacet {
 pub struct StlFile {
     pub header: [u8; 80],
     pub facets: Vec<StlFacet>,
-    pub vertices: VertexMap,
 }
 
 impl StlFile {
@@ -63,7 +62,6 @@ impl StlFile {
         let mut file = StlFile {
             header: [0u8; 80],
             facets: Vec::new(),
-            vertices: VertexMap::new()
         };
         try!(r.read_at_least(file.header.len(), &mut file.header));
         // TODO: select which form to read: binary or ascii
@@ -93,9 +91,6 @@ impl StlFile {
         let facet_count = try!(r.read_le_u32());
         for _ in range(0, facet_count) {
             let f = try!(StlFacet::read(r));
-            self.vertices.add(f.v1);
-            self.vertices.add(f.v2);
-            self.vertices.add(f.v3);
             self.facets.push(f);
         }
         Ok(self)
@@ -111,24 +106,22 @@ impl StlFile {
     }
 
     pub fn as_mesh(&self) -> Mesh {
-        new_mesh(&self.facets, &self.vertices)
+        let mut vmap = VertexMap::new();
+        for f in self.facets.iter() {
+            vmap.add(f.v1);
+            vmap.add(f.v2);
+            vmap.add(f.v3);
+        }
+        Mesh::new_from_parts(vmap.vector(), indexed_vertices(&self.facets, &vmap))
     }
 
     pub fn println_debug(&self) {
         println!("Is {} STL", self.kind());
         println!("Facets: {}", self.facets.len());
         for f in self.facets.iter() {
-            let v1i = self.vertices.get(&f.v1);
-            let v2i = self.vertices.get(&f.v2);
-            let v3i = self.vertices.get(&f.v3);
-            println!("  Facet: {:?} => {}-{}-{}", f, v1i, v2i, v3i);
+            println!("  Facet: {:?}", f);
         }
-        println!("Vertices: {}", self.vertices.len());
     }
-}
-
-fn new_mesh(fv: &Vec<StlFacet>, vm: &VertexMap) -> Mesh {
-    Mesh::new_from_parts(vm.vector(), indexed_vertices(fv, vm))
 }
 
 fn indexed_vertices(fv: &Vec<StlFacet>, vm: &VertexMap) -> Vec<Facet> {
