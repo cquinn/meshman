@@ -1,4 +1,7 @@
+#![feature(env)]
 #![feature(old_io)]
+#![feature(old_path)]
+
 extern crate mesh;
 extern crate getopts;
 
@@ -34,11 +37,19 @@ fn main() {
         Some(x) => x,
         None => panic!("No input file"),
     };
-    let meshfile = match File::open(&Path::new(input_file)) {
+    let meshfile = File::open(&Path::new(input_file));
+    let file = match StlFile::read(&mut BufferedReader::new(meshfile)) {
         Ok(f) => f,
-        Err(e) => panic!("file error: {}", e),
+        Err(e) => { println!("STL file error: {}", e); return; }
     };
-    let mesh = StlFile::read(&mut BufferedReader::new(meshfile));
+
+    let mesh = file.as_mesh();
+
+    file.println_debug();
+    println!("");
+
+    let mesh = file.as_mesh();
+    println!("Mesh: {:?}", &mesh);
 
     // Process free as commands
     let mut commands: Vec<&MeshOperation> = Vec::new();

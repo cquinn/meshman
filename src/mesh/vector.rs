@@ -1,12 +1,14 @@
-// This is where code for the "vector" sub-module should live.
+// Vector sub-module.
+//#![allow(unstable)]
+#![allow(dead_code)]
+#![deny(unused_imports)]
 
 use std::collections::HashMap;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::{transmute};
 use std::num::Float;
-use std::old_io::{BufferedReader,IoResult,Reader};
-use std::f32::NAN;
+use std::old_io::{IoResult,Reader};
 
 #[derive(PartialEq, PartialOrd, Copy)] //Show,
 pub struct Vector3D {
@@ -160,7 +162,7 @@ impl VertexMap {
 
     pub fn vector(&self) -> Vec<Vector3D> {
         let mut v: Vec<Vector3D> = Vec::with_capacity(self.vertices.len());
-        for (v3d, idx) in self.vertices.iter() {
+        for (v3d, _) in self.vertices.iter() {
             v.push(*v3d);  // Funkiness just to get v expanded. Below writes the real values.
         }
         for (v3d, idx) in self.vertices.iter() {
