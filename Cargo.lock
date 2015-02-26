@@ -1,4 +1,20 @@
 [root]
 name = "meshman"
 version = "0.0.0"
+dependencies = [
+ "getopts 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "getopts"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "log"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
