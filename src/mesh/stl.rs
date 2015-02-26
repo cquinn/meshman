@@ -6,6 +6,7 @@
 // This guy depends on multiple sibling sub-modules, so he can use that here.
 use std::old_io::{IoResult,Reader};
 use std::fmt;
+use std::mem;
 use mesh::Mesh;
 use mesh::Facet;
 use vector::Vector3D;
@@ -96,6 +97,48 @@ impl StlFile {
         Ok(self)
     }
 
+
+    pub fn write_binary(m: &Mesh, w: &mut Writer) -> IoResult<()> {
+
+       //IMPORTANT! STL files assume little endian
+       let mut header = StlHeader { header: [0u8; 80] };
+
+       // write the blank header
+       for i in range(0, mem::size_of_val(&header)) {
+          try!(w.write_u8(header.header[i]));
+       }
+
+       // write the number of triangles
+       let num = m.facets.len();
+       try!(w.write_le_u32(num as u32));
+
+       // for each triangle
+       for i in range(0, num) {
+
+          // write its facet
+          let facet = m.facets[i];
+          let stl_facet = StlFacet { n:facet.n, v1:m.vertices[facet.v1], v2:m.vertices[facet.v2], v3:m.vertices[facet.v3], abc:0 as u16 };
+
+          try!(w.write_le_f32(stl_facet.n.x));
+          try!(w.write_le_f32(stl_facet.n.y));
+          try!(w.write_le_f32(stl_facet.n.z));
+          try!(w.write_le_f32(stl_facet.v1.x));
+          try!(w.write_le_f32(stl_facet.v1.y));
+          try!(w.write_le_f32(stl_facet.v1.z));
+          try!(w.write_le_f32(stl_facet.v2.x));
+          try!(w.write_le_f32(stl_facet.v2.y));
+          try!(w.write_le_f32(stl_facet.v2.z));
+          try!(w.write_le_f32(stl_facet.v3.x));
+          try!(w.write_le_f32(stl_facet.v3.y));
+          try!(w.write_le_f32(stl_facet.v3.z));
+
+          // STL file format states atribute count should be 0
+          try!(w.write_le_u16(0 as u16));
+       }
+
+       Ok(())
+    }
+
     pub fn kind(&self) -> String {
         let hs = String::from_utf8_lossy(&self.header);
         if hs.starts_with("solid ") {
@@ -140,4 +183,46 @@ fn indexed_vertices(fv: &Vec<StlFacet>, vm: &VertexMap) -> Vec<Facet> {
         })
     }
     v
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use std::old_io::BufferedReader;
+    use std::old_io::BufferedWriter;
+    use std::old_io::fs::File;
+
+    #[test]
+    fn can_write_binary() {
+
+        let meshname = "./Lily_Pad.stl";
+        let meshname2 = "./Lily_Pad.stl";
+
+        let meshfile = match File::open(&Path::new(meshname)) {
+            Ok(f) => f,
+            Err(e) => panic!("file error: {}", e),
+        };
+
+        let meshfile2 = match File::open(&Path::new(meshname2)) {
+            Ok(f) => f,
+            Err(e) => panic!("file error: {}", e),
+        };
+
+        let stl = StlFile::read(&mut BufferedReader::new(meshfile)).unwrap();
+        let mesh = stl.as_mesh();
+
+        {
+            let file = File::create(&Path::new("./Test.stl")).unwrap();
+            let writer = &mut BufferedWriter::new(file);
+            StlFile::write_binary(&mesh, writer);
+        }
+
+        let file = File::open(&Path::new("./Test.stl")).unwrap();
+        let stl2 = StlFile::read(&mut BufferedReader::new(file)).unwrap();
+        let mesh2 = stl2.as_mesh();
+        let stl3 = StlFile::read(&mut BufferedReader::new(meshfile2)).unwrap();
+        let mesh3 = stl3.as_mesh();
+        assert_eq!(mesh3, mesh2);
+    }
 }

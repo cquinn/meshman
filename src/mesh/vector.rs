@@ -77,8 +77,6 @@ impl Vector3D {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::num::Float;
-
 
     #[test]
     fn vectors_can_be_subtracted() {
