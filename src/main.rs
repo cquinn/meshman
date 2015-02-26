@@ -30,5 +30,5 @@ fn main() {
     let mesh = file.as_mesh();
     println!("Mesh: {:?}", &mesh);
         
-    POV::write_file(&meshname_copy, mesh);
+    POV::export_to_pov(&meshname_copy, mesh);
 }
