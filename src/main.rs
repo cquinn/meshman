@@ -18,17 +18,17 @@ fn main() {
     );
 
     let meshname_copy = meshname.clone();
-    
-    let meshfile = match File::open(&Path::new(meshname)) {
+    let meshfile = File::open(&Path::new(meshname));
+    let file = match StlFile::read(&mut BufferedReader::new(meshfile)) {
         Ok(f) => f,
-        Err(e) => panic!("file error: {}", e),
+        Err(e) => { println!("STL file error: {}", e); return; }
     };
 
-    match StlFile::read(&mut BufferedReader::new(meshfile)) {
-        Ok(m) => {
-            // Add writes to other files here
-            POV::write_file(&meshname_copy, m);
-        },
-        Err(why) => panic!("Can't read mesh: {}", why)
-    }
+    file.println_debug();
+    println!("");
+    
+    let mesh = file.as_mesh();
+    println!("Mesh: {:?}", &mesh);
+        
+    POV::write_file(&meshname_copy, mesh);
 }
