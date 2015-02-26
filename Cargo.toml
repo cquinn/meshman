@@ -22,3 +22,6 @@ path = "src/main.rs"
 
 name = "mesh"
 path = "./src/mesh/lib.rs"
+
+[dependencies]
+getopts = "*"
