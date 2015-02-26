@@ -1,6 +1,4 @@
-#![feature(env)]
-#![feature(old_io)]
-#![feature(old_path)]
+#![feature(env,old_io,old_path,os)]
 
 extern crate mesh;
 extern crate getopts;
@@ -13,7 +11,6 @@ use mesh::Mesh;
 use mesh::Vector3D;
 use getopts::Options;
 use std::os;
-use std::mem;
 
 fn main() {
     let args: Vec<String> = os::args();
