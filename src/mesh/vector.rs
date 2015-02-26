@@ -12,9 +12,9 @@ use std::old_io::{IoResult,Reader};
 
 #[derive(PartialEq, PartialOrd, Copy)] //Show,
 pub struct Vector3D {
-    x: f32,
-    y: f32,
-    z: f32,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 // PartialEq is derived above, but we need to impl Eq since floats don't get

@@ -4,7 +4,6 @@
 // This guy depends on a sibling sub-module, so he can use that here.
 use std::fmt;
 use vector::Vector3D;
-use vector::VertexMap;
 
 #[derive(PartialEq, Eq, Hash, Copy)]
 pub struct Facet {
