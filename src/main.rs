@@ -68,8 +68,10 @@ fn main() {
             None => panic!("Every command requires a vector"),
             Some(y) => arg_to_vector(y.clone()),
         };
-        let command = match command_name.as_slice() {
+        let command:Box<MeshOperation> = match command_name.as_slice() {
             "rotate" => Box::new(RotateOperation { v: vector }),
+            "scale" => Box::new(ScaleOperation { v: vector }),
+            "translate" => Box::new(TranslateOperation { v: vector }),
             _ => panic!("Unknown command: {}", command_name)
         };
         commands.push( command );
@@ -106,6 +108,12 @@ trait MeshOperation {
 pub struct RotateOperation {
     v: Vector3D,
 }
+pub struct ScaleOperation {
+    v: Vector3D,
+}
+pub struct TranslateOperation {
+    v: Vector3D,
+}
 
 impl MeshOperation for RotateOperation {
     fn apply(&self, mesh: Mesh) -> Mesh {
@@ -116,6 +124,35 @@ impl MeshOperation for RotateOperation {
             .map(|v3| rot.rotate(&v3))
             .map(|v3| Vector3D {x: v3.x, y: v3.y, z: v3.z} )
             .collect();
+
+        //println!("{:?}", v3s);
+        return Mesh::new_from_parts(v3s, mesh.facets);
+    }
+}
+impl MeshOperation for ScaleOperation {
+    fn apply(&self, mesh: Mesh) -> Mesh {
+        let rot = Vec3::new(self.v.x, self.v.y, self.v.z);
+
+        let v3s = mesh.vertices.iter()
+        .map(|v| Vec3::new(v.x, v.y, v.z) )
+        .map(|v3| rot.transform(&v3))
+        .map(|v3| Vector3D {x: v3.x, y: v3.y, z: v3.z} )
+        .collect();
+
+        //println!("{:?}", v3s);
+        return Mesh::new_from_parts(v3s, mesh.facets);
+    }
+}
+
+impl MeshOperation for TranslateOperation {
+    fn apply(&self, mesh: Mesh) -> Mesh {
+        let rot = Vec3::new(self.v.x, self.v.y, self.v.z);
+
+        let v3s = mesh.vertices.iter()
+        .map(|v| Vec3::new(v.x, v.y, v.z) )
+        .map(|v3| rot.transform(&v3))
+        .map(|v3| Vector3D {x: v3.x, y: v3.y, z: v3.z} )
+        .collect();
 
         //println!("{:?}", v3s);
         return Mesh::new_from_parts(v3s, mesh.facets);
