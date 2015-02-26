@@ -1,6 +1,5 @@
 #![crate_name = "mesh"]
-#![feature(old_io)]
-#![feature(core)]
+#![feature(old_io,core)]
 
 // This tells the compiler to look in these additional files for code that's
 // part of this module.
