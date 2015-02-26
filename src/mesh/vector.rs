@@ -8,7 +8,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::{transmute};
 use std::num::Float;
-use std::old_io::{IoResult,Reader};
+use std::old_io::{IoResult,Reader,Writer};
 
 #[derive(PartialEq, PartialOrd, Copy)] //Show,
 pub struct Vector3D {
@@ -36,6 +36,13 @@ impl Vector3D {
         let yr = try!(r.read_le_f32());
         let zr = try!(r.read_le_f32());
         return Ok(Vector3D { x: xr, y: yr, z: zr });
+    }
+
+    pub fn write(&self, w: &mut Writer) -> IoResult<()> {
+        try!(w.write_le_f32(self.x));
+        try!(w.write_le_f32(self.y));
+        try!(w.write_le_f32(self.z));
+        Ok(())
     }
 
     pub fn minus(&self, o: Vector3D) -> Vector3D {
@@ -107,7 +114,6 @@ mod tests {
         //assert_eq!(format!("", result.x), 0.802);
         //assert_eq!(result.y.round(), 0.267);
         //assert_eq!(result.y.round(), 0.534);
-
     }
 }
 

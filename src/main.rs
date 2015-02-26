@@ -42,16 +42,16 @@ fn main() {
 
     let input_file = match matches.opt_str("i") {
         Some(x) => x,
-        None => panic!("No input file"),
+        None => { println!("No input file"); return; },
     };
 
     let input_file_copy = input_file.clone();
-    
+
     let meshfile = File::open(&Path::new(input_file));
 
     let file = match StlFile::read(&mut BufferedReader::new(meshfile)) {
         Ok(f) => f,
-        Err(e) => { println!("STL file error: {}", e); return; }
+        Err(e) => { println!("STL read error: {}", e); return; }
     };
 
     let mesh = file.as_mesh();
@@ -65,14 +65,14 @@ fn main() {
             Some(x) => x.clone(),
         };
         let vector = match iter.next() {
-            None => panic!("Every command requires a vector"),
+            None => { println!("Every command requires a vector"); return; },
             Some(y) => arg_to_vector(y.clone()),
         };
         let command:Box<MeshOperation> = match command_name.as_slice() {
             "rotate" => Box::new(RotateOperation { v: vector }),
             "scale" => Box::new(ScaleOperation { v: vector }),
             "translate" => Box::new(TranslateOperation { v: vector }),
-            _ => panic!("Unknown command: {}", command_name)
+            _ => { println!("Unknown command: {}", command_name); return; }
         };
         commands.push( command );
     }
@@ -90,7 +90,7 @@ fn main() {
     }
 
     if export_to_povray {
-        POV::export_to_pov(&input_file_copy, changed_mesh);
+        POV::export_to_pov(&input_file_copy, &changed_mesh);
     } else if export_to_amf {
         AmfFile::write(&changed_mesh, input_file_copy);
     } else if export_to_console {
@@ -135,7 +135,7 @@ impl MeshOperation for ScaleOperation {
 
         let v3s = mesh.vertices.iter()
         .map(|v| Vec3::new(v.x, v.y, v.z) )
-        .map(|v3| rot.transform(&v3))
+        .map(|v3| rot.rotate(&v3))
         .map(|v3| Vector3D {x: v3.x, y: v3.y, z: v3.z} )
         .collect();
 
@@ -150,7 +150,7 @@ impl MeshOperation for TranslateOperation {
 
         let v3s = mesh.vertices.iter()
         .map(|v| Vec3::new(v.x, v.y, v.z) )
-        .map(|v3| rot.transform(&v3))
+        .map(|v3| rot.rotate(&v3))
         .map(|v3| Vector3D {x: v3.x, y: v3.y, z: v3.z} )
         .collect();
 
