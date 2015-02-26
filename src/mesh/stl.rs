@@ -91,7 +91,7 @@ impl StlFile {
 
     fn read_binary(&mut self, r: &mut Reader) -> IoResult<&StlFile> {
         let facet_count = try!(r.read_le_u32());
-        for fi in range(0, facet_count) {
+        for _ in range(0, facet_count) {
             let f = try!(StlFacet::read(r));
             self.vertices.add(f.v1);
             self.vertices.add(f.v2);
