@@ -6,6 +6,7 @@ extern crate getopts;
 use std::old_io::BufferedReader;
 use std::old_io::fs::File;
 use mesh::StlFile;
+use mesh::POV;
 use mesh::Mesh;
 use mesh::Vector3D;
 use getopts::Options;
@@ -18,6 +19,7 @@ fn main() {
     let mut opts = Options::new();
     opts.optopt("i", "input", "File name to process", "FILE");
     opts.optopt("o", "output", "File name to output", "FILE");
+    opts.optflag("p", "povray", "Export the model into POV-Ray format");
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(args.tail()) {
@@ -30,6 +32,8 @@ fn main() {
         return;
     };
 
+    let export_to_povray = matches.opt_present("p");
+    
     let input_file = match matches.opt_str("i") {
         Some(x) => x,
         None => panic!("No input file"),
@@ -39,7 +43,10 @@ fn main() {
         None => panic!("No output file"),
     };
 
+    let input_file_copy = input_file.clone();
+    
     let meshfile = File::open(&Path::new(input_file));
+
     let file = match StlFile::read(&mut BufferedReader::new(meshfile)) {
         Ok(f) => f,
         Err(e) => { println!("STL file error: {}", e); return; }
@@ -49,7 +56,7 @@ fn main() {
 
     file.println_debug();
     println!("");
-
+    
     let mesh = file.as_mesh();
     println!("Mesh: {:?}", &mesh);
 
@@ -79,9 +86,13 @@ fn main() {
     }
 
     // Do we open the file, if it doesn't exist yet?
-    let generated_file = match File::open(&Path::new(output_file)) {
-        Ok(f) => f,
-        Err(e) => panic!("file error: {}", e),
+//    let generated_file = match File::open(&Path::new(output_file)) {
+//        Ok(f) => f,
+//        Err(e) => panic!("file error: {}", e),
+//    };
+
+    if export_to_povray {
+        POV::export_to_pov(&input_file_copy, mesh);
     };
 }
 
