@@ -7,17 +7,17 @@ use vector::Vector3D;
 pub struct POV;
 
 impl POV {
-    pub fn export_to_pov(file_name: &str, mesh: &Mesh) -> IoResult<()> {
+    pub fn write(mesh: &Mesh, file_name: &str) -> IoResult<()> {
         let out_file_name = file_name.replace("stl", "inc");
-        let out_file_name_copy = out_file_name.clone();
-        let path = Path::new(out_file_name);
-        //let modelname = path.file_name();
-        let modelname = "m_model";
+        let path = Path::new(out_file_name.clone());
 
         let mut file = match File::create(&path) {
             Err(why) => { return Err(why); },
             Ok(file) => file
         };
+
+        //let modelname = path.file_name();
+        let modelname = "m_model";
 
         try!(file.write_str(&format!("// Source file: {}\n", file_name)));
         try!(file.write_str(&format!("# declare {} = mesh {{\n", modelname)));
@@ -33,7 +33,7 @@ impl POV {
         try!(file.write_str("}\n"));
 
         let template = POV::read_template();
-        let first_pass = template.replace("FILE_NAME", &out_file_name_copy);
+        let first_pass = template.replace("FILE_NAME", &out_file_name);
         let second_pass = first_pass.replace("MODEL_NAME", modelname);
 
         let modelfilename = file_name.replace("stl", "pov");
@@ -53,9 +53,9 @@ impl POV {
         let v3 = mesh.vertices[facet.v3];
 
         format!("    triangle {{\n        {},\n        {},\n        {}\n    }}\n",
-                POV::vertex_to_povstring(v1),
-                POV::vertex_to_povstring(v2),
-                POV::vertex_to_povstring(v3))
+            POV::vertex_to_povstring(v1),
+            POV::vertex_to_povstring(v2),
+            POV::vertex_to_povstring(v3))
     }
 
     fn vertex_to_povstring(vector: Vector3D) -> String {
