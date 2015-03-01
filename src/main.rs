@@ -21,8 +21,8 @@ fn main() {
 
     let mut opts = Options::new();
     opts.optopt("i", "input", "File name to process", "FILE");
-    opts.optflag("p", "povray", "Export the model into POV-Ray format");
-    opts.optflag("a", "amf", "Export the model into AMF format");
+    opts.optflag("p", "povray", "Export the model to POV-Ray format");
+    opts.optflag("a", "amf", "Export the model to AMF format");
     opts.optflag("v", "view", "Print the model to the console");
     opts.optflag("h", "help", "print this help menu");
 
@@ -32,7 +32,7 @@ fn main() {
     };
 
     if matches.opt_present("h") {
-        print_usage(program.as_slice(), opts);
+        print_usage(program.as_slice(), &opts);
         return;
     };
 
@@ -42,19 +42,26 @@ fn main() {
 
     let input_file = match matches.opt_str("i") {
         Some(x) => x,
-        None => { println!("No input file"); return; },
+        None => {
+            println!("No input file");
+            return;
+        },
     };
 
-    let input_file_copy = input_file.clone();
-
-    let meshfile = File::open(&Path::new(input_file));
-
-    let file = match StlFile::read(&mut BufferedReader::new(meshfile)) {
+    let file = File::open(&Path::new(input_file.clone()));
+    let meshfile = match StlFile::read(&mut BufferedReader::new(file)) {
         Ok(f) => f,
-        Err(e) => { println!("STL read error: {}", e); return; }
+        Err(e) => {
+            println!("STL read error: {}", e);
+            return;
+        }
     };
 
-    let mesh = file.as_mesh();
+    meshfile.println_debug();
+    println!("");
+
+    let mesh = meshfile.as_mesh();
+    println!("Mesh: {:?}\n", &mesh);
 
     // Process free as commands
     let mut commands: Vec<Box<MeshOperation>> = Vec::new();
@@ -64,6 +71,7 @@ fn main() {
             None => break, // empty
             Some(x) => x.clone(),
         };
+        println!("Command: {}", command_name);
         let vector = match iter.next() {
             None => { println!("Every command requires a vector"); return; },
             Some(y) => arg_to_vector(y.clone()),
@@ -90,14 +98,13 @@ fn main() {
     }
 
     if export_to_povray {
-        POV::export_to_pov(&input_file_copy, &changed_mesh);
+        POV::write(&changed_mesh, &input_file);
     } else if export_to_amf {
-        AmfFile::write(&changed_mesh, input_file_copy);
+        AmfFile::write(&changed_mesh, &input_file);
     } else if export_to_console {
         //file.println_debug();
         println!("Mesh: {:?}", &changed_mesh);
     };
-
 }
 
 // Command pattern
@@ -108,9 +115,11 @@ trait MeshOperation {
 pub struct RotateOperation {
     v: Vector3D,
 }
+
 pub struct ScaleOperation {
     v: Vector3D,
 }
+
 pub struct TranslateOperation {
     v: Vector3D,
 }
@@ -129,6 +138,7 @@ impl MeshOperation for RotateOperation {
         return Mesh::new_from_parts(v3s, mesh.facets);
     }
 }
+
 impl MeshOperation for ScaleOperation {
     fn apply(&self, mesh: Mesh) -> Mesh {
         let rot = Vec3::new(self.v.x, self.v.y, self.v.z);
@@ -184,7 +194,7 @@ fn able_to_rotate() {
     assert_eq!(a.as_array(), d.as_array());
 }
 
-fn print_usage(program: &str, opts: Options) {
+fn print_usage(program: &str, opts: &Options) {
     let brief = format!("Usage: {} [options] [operation vector]", program);
     print!("{}", opts.usage(brief.as_slice()));
 }

@@ -15,7 +15,7 @@ impl AmfFile {
         panic!("not implemented");
     }
 
-    pub fn write(m: &Mesh, in_file_path: String) -> IoResult<()> {
+    pub fn write(m: &Mesh, in_file_path: &str) -> IoResult<()> {
 
         let out_file_name = in_file_path.replace("stl", "amf");
         let path = Path::new(out_file_name);
@@ -49,7 +49,6 @@ impl AmfFile {
         try!(show(&mut out_file, format!("</amf>")));
         Ok(())
     }
-
 }
 
 fn show(f: &mut File, s: String) -> IoResult<()> {

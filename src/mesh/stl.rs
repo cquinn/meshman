@@ -68,7 +68,7 @@ pub struct StlFile {
 
 impl StlFile {
 
-    pub fn read<R: Reader>(r: &mut R) -> IoResult<StlFile> {
+    pub fn read(r: &mut Reader) -> IoResult<StlFile> {
         let mut file = StlFile {
             header: [0u8; 80],
             facets: Vec::new(),
