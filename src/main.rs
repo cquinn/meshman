@@ -21,8 +21,9 @@ fn main() {
 
     let mut opts = Options::new();
     opts.optopt("i", "input", "File name to process", "FILE");
-    opts.optflag("p", "povray", "Export the model to POV-Ray format");
-    opts.optflag("a", "amf", "Export the model to AMF format");
+    opts.optflag("p", "povray", "Write the model to POV-Ray format file");
+    opts.optflag("a", "amf", "Write the model to AMF format file");
+    opts.optflag("s", "stl", "Write the model to STL format file");
     opts.optflag("v", "view", "Print the model to the console");
     opts.optflag("h", "help", "print this help menu");
 
@@ -36,32 +37,27 @@ fn main() {
         return;
     };
 
-    let export_to_povray = matches.opt_present("p");
-    let export_to_amf = matches.opt_present("a");
-    let export_to_console = matches.opt_present("v");
+    let write_to_povray = matches.opt_present("p");
+    let write_to_amf = matches.opt_present("a");
+    let write_to_stl = matches.opt_present("s");
+    let write_to_console = matches.opt_present("v");
 
     let input_file = match matches.opt_str("i") {
         Some(x) => x,
-        None => {
-            println!("No input file");
-            return;
-        },
+        None => { println!("No input file"); return; },
     };
 
     let file = File::open(&Path::new(input_file.clone()));
     let meshfile = match StlFile::read(&mut BufferedReader::new(file)) {
         Ok(f) => f,
-        Err(e) => {
-            println!("STL read error: {}", e);
-            return;
-        }
+        Err(e) => { println!("STL read error: {}", e); return; }
     };
 
-    meshfile.println_debug();
-    println!("");
+    //meshfile.println_debug();
+    //println!("");
 
     let mesh = meshfile.as_mesh();
-    println!("Mesh: {:?}\n", &mesh);
+    //println!("Mesh: {:?}\n", &mesh);
 
     // Process free as commands
     let mut commands: Vec<Box<MeshOperation>> = Vec::new();
@@ -97,12 +93,20 @@ fn main() {
         }
     }
 
-    if export_to_povray {
+    if write_to_povray {
         POV::write(&changed_mesh, &input_file);
-    } else if export_to_amf {
+    };
+    if write_to_amf {
         AmfFile::write(&changed_mesh, &input_file);
-    } else if export_to_console {
-        //file.println_debug();
+    };
+    if write_to_stl {
+        let output_file = format!("new-{}", input_file);
+        let mut outfile = File::create(&Path::new(output_file.clone()));
+        println!("Writing Mesh to {}", output_file);
+        StlFile::write_binary(&changed_mesh, &mut outfile);
+    };
+    if write_to_console {
+        //meshfile.println_debug();
         println!("Mesh: {:?}", &changed_mesh);
     };
 }
@@ -126,11 +130,11 @@ pub struct TranslateOperation {
 
 impl MeshOperation for RotateOperation {
     fn apply(&self, mesh: Mesh) -> Mesh {
-        let rot = Vec3::new(self.v.x, self.v.y, self.v.z);
+        let rot = Rot3::new(Vec3::new(self.v.x, self.v.y, self.v.z));
 
         let v3s = mesh.vertices.iter()
             .map(|v| Vec3::new(v.x, v.y, v.z) )
-            .map(|v3| rot.rotate(&v3))
+            .map(|v3| rot.absolute_rotate(&v3))
             .map(|v3| Vector3D {x: v3.x, y: v3.y, z: v3.z} )
             .collect();
 
@@ -171,7 +175,7 @@ impl MeshOperation for TranslateOperation {
 
 fn arg_to_vector(arg: String) -> Vector3D {
     let parts: Vec<f32> = arg.split(',').filter_map(|s| s.parse::<f32>().ok() ).collect();
-    if (parts.len() != 3) {
+    if parts.len() != 3 {
         panic!("Vector must have three elements: {}", arg)
     };
     Vector3D{x: parts[0], y: parts[1], z: parts[2]}
