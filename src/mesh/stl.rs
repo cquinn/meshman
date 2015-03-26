@@ -4,7 +4,7 @@
 #![deny(unused_imports)]
 
 // This guy depends on multiple sibling sub-modules, so he can use that here.
-use std::old_io::{IoResult,Reader};
+use std::old_io::{IoResult,Reader,Writer};
 use std::fmt;
 use std::mem;
 use mesh::Mesh;
@@ -99,7 +99,7 @@ impl StlFile {
 
     fn read_binary(&mut self, r: &mut Reader) -> IoResult<&StlFile> {
         let facet_count = try!(r.read_le_u32());
-        for _ in range(0, facet_count) {
+        for _ in 0..facet_count {
             let f = try!(StlFacet::read(r));
             self.facets.push(f);
         }
@@ -112,7 +112,7 @@ impl StlFile {
         let header = StlHeader { header: [0u8; 80] };
 
         // write the blank header
-        for i in range(0, mem::size_of_val(&header)) {
+        for i in 0..mem::size_of_val(&header) {
             try!(w.write_u8(header.header[i]));
         }
 
@@ -121,7 +121,7 @@ impl StlFile {
         try!(w.write_le_u32(num as u32));
 
         // for each triangle
-        for i in range(0, num) {
+        for i in 0..num {
 
             // write its facet
             let facet = &m.facets[i];

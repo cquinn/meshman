@@ -1,4 +1,6 @@
 #![feature(env,old_io,old_path,os)]
+#![feature(collections)]
+#![feature(core)]
 
 extern crate mesh;
 extern crate getopts;
@@ -6,6 +8,7 @@ extern crate nalgebra;
 
 use std::old_io::BufferedReader;
 use std::old_io::fs::File;
+use std::old_path::Path;
 use mesh::StlFile;
 use mesh::AmfFile;
 use mesh::POV;

@@ -4,7 +4,8 @@
 #![deny(unused_must_use)]
 #![allow(deprecated)]
 
-use std::old_io::{File,IoResult,Reader};
+use std::old_io::{File,IoResult,Reader,Writer};
+use std::old_path::Path;
 use mesh::Mesh;
 
 pub struct AmfFile;

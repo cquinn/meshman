@@ -1,5 +1,6 @@
 
-use std::old_io::{File,IoResult};
+use std::old_io::{File,IoResult,Reader,Writer};
+use std::old_path::Path;
 use Mesh;
 use mesh::Facet;
 use vector::Vector3D;
